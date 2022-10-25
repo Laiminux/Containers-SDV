@@ -1,0 +1,2 @@
+CREATE DATABASE authelia;
+CREATE DATABASE db;

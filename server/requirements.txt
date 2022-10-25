@@ -1,0 +1,8 @@
+Flask
+psycopg2-binary
+requests
+gunicorn
+xlrd
+flask_prometheus_metrics
+prometheus-flask-exporter
+flask_prometheus_metrics

@@ -1,0 +1,16 @@
+users:
+    john:
+        password: "$argon2id$v=19$m=65536,t=3,p=4$uy5s4TlOlneWwHmkyEu/RQ$XjUtuRjgB4CrkhpV9huDpAbuP32EmRb0lfbQODBVsEU"
+        displayname: john
+        email: john@authelia.com
+        groups:
+            - admins
+            - dev
+        disabled: false
+    doe:
+        password: "$argon2id$v=19$m=65536,t=3,p=4$uy5s4TlOlneWwHmkyEu/RQ$XjUtuRjgB4CrkhpV9huDpAbuP32EmRb0lfbQODBVsEU"
+        displayname: doe
+        email: doe@authelia.com
+        groups:
+            - dev
+        disabled: false

@@ -1,0 +1,86 @@
+version: '3'
+secrets:
+  JWT_SECRET:
+    file: ./authelia/secrets/JWT_SECRET
+  SESSION_SECRET:
+    file: ./authelia/secrets/SESSION_SECRET
+  STORAGE_PASSWORD:
+    file: ./authelia/secrets/STORAGE_PASSWORD
+  STORAGE_ENCRYPTION_KEY:
+    file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+
+services:
+    flask:
+      depends_on:
+      - db
+      build: ./server/
+      command: python app.py
+      expose:
+        - 80
+      volumes:
+        - ./server:/backend
+      networks:
+      - net
+
+    debug: 
+      image: ubuntu:20.04
+      command: sleep 1d
+      networks:
+        - net
+    
+    db:
+      build: ./postgres
+      volumes:
+        - ./postgres/pg-data:/var/lib/postgresql
+      environment:
+        POSTGRES_PASSWORD: "admin"
+      expose:
+        - 5432
+      networks:
+        - net
+    
+    nginx:
+      image: lscr.io/linuxserver/nginx
+      ports:
+      - '80:80'
+      - '443:443'
+      volumes:
+        - ./nginx/snippets:/config/nginx/snippets
+        - ./nginx/site-confs:/config/nginx/site-confs
+      depends_on:
+        - flask
+        - authelia
+      networks:
+        - net
+    
+    prometheus:
+      image: prom/prometheus:latest
+      ports:
+        - 9090:9090
+      volumes:
+       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      networks:
+        - net
+
+
+    authelia:
+      container_name: authelia
+      image: docker.io/authelia/authelia:latest
+      restart: unless-stopped
+      networks:
+        net:
+          aliases: []
+      ports:
+        - 9091:9091
+      secrets: [JWT_SECRET, SESSION_SECRET, STORAGE_PASSWORD, STORAGE_ENCRYPTION_KEY]
+      environment:
+      #  AUTHELIA_JWT_SECRET_FILE: /run/secrets/JWT_SECRET
+      #  AUTHELIA_SESSION_SECRET_FILE: /run/secrets/SESSION_SECRET
+        AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: /run/secrets/STORAGE_PASSWORD
+        AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/STORAGE_ENCRYPTION_KEY
+      volumes:
+        - ./authelia/config:/config
+      
+networks:
+  net:
+    driver: bridge

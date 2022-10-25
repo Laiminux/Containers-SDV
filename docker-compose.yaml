@@ -1,0 +1,54 @@
+version: '3'
+services:
+    flask:
+      depends_on:
+      - db
+      build: ./server/
+      command: python app.py
+      ports:
+        - "5000:5000"
+      volumes:
+        - ./server:/backend
+      networks:
+      - net
+    
+    
+    db:
+      image: postgres:14.5
+      volumes:
+        - ./postgres/pg-data:/var/lib/postgresql
+        - ./postgres/:/docker-entrypoint-initdb.d
+      environment:
+        POSTGRES_PASSWORD: "admin"
+        POSTGRES_DB: "db"
+        POSTGRES_USERNAME: "test"
+        POSTGRES_USERNAME_PASSWORD : "test"
+      expose:
+        - 5432
+      networks:
+      - net
+    
+    phppgadmin:
+      depends_on:
+        - db
+      image: dockage/phppgadmin
+      environment:
+        PHP_PG_ADMIN_SERVER_HOST: db
+        PHP_PG_ADMIN_SERVER_DEFAULT_DB: db
+      restart: always
+      ports:
+        - 5001:80
+      volumes:
+        - /sessions
+      networks:
+      - net
+        
+    debug: 
+      image: ubuntu:20.04
+      command: sleep 1d
+      networks:
+      - net
+  
+networks:
+  net:
+    driver: bridge
